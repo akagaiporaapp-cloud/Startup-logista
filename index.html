@@ -9,20 +9,25 @@
         body { background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; gap: 20px; }
         .container { background: white; width: 100%; max-width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 10px solid #0052cc; text-align: center; }
         .container.oferta-border { border-top-color: #ff9900; }
+        .container.resgate-border { border-top-color: #e91e63; }
         h2 { color: #111b21; margin-bottom: 5px; }
         p { color: #667781; font-size: 14px; margin-bottom: 25px; }
         .input-group { text-align: left; margin-bottom: 18px; }
         label { display: block; font-size: 13px; color: #111b21; font-weight: 600; margin-bottom: 6px; }
         .label-blue { color: #0052cc; }
         .label-orange { color: #ff9900; }
+        .label-pink { color: #e91e63; }
         input, textarea { width: 100%; height: 45px; padding: 0 12px; border: 1px solid #e9edef; border-radius: 8px; outline: none; font-size: 15px; background-color: #f0f2f5; }
         textarea { height: 70px; padding: 10px 12px; resize: none; }
         input:focus, textarea:focus { border-color: #0052cc; background-color: #fff; }
         .container.oferta-border input:focus, .container.oferta-border textarea:focus { border-color: #ff9900; background-color: #fff; }
+        .container.resgate-border input:focus { border-color: #e91e63; background-color: #fff; }
         button { width: 100%; height: 48px; background-color: #0052cc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #003d99; }
         .btn-orange { background-color: #ff9900; }
         .btn-orange:hover { background-color: #e68a00; }
+        .btn-pink { background-color: #e91e63; }
+        .btn-pink:hover { background-color: #c2185b; }
     </style>
 </head>
 <body>
@@ -54,6 +59,23 @@
         <button onclick="lancarCashback()">Confirmar e Enviar Crédito</button>
     </div>
 
+    <div class="container resgate-border">
+        <h2>Resgatar Cashback 💰</h2>
+        <p>Descontar do saldo acumulado do cliente</p>
+
+        <div class="input-group">
+            <label class="label-pink" for="resgateCpf">CPF DO CLIENTE (Apenas números)</label>
+            <input type="number" id="resgateCpf" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+        </div>
+
+        <div class="input-group">
+            <label class="label-pink" for="resgateValor">VALOR DO RESGATE / DESCONTO (R$)</label>
+            <input type="number" id="resgateValor" step="0.01" placeholder="Ex: 25.00">
+        </div>
+
+        <button class="btn-pink" onclick="realizarResgate()">Confirmar Desconto / Resgate</button>
+    </div>
+
     <div class="container oferta-border">
         <h2>Notificar Oferta Especial 🎯</h2>
         <p>Envie cupons ou descontos direto para o app do cliente</p>
@@ -83,9 +105,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // CREDENCIAIS DA SUA CONTA ATUALIZADAS
         const firebaseConfig = {
             apiKey: "AIzaSyBFmMSu6usbjQua4KAP-V0FFTeq5WxYH5c",
             authDomain: "startup-b5c8e.firebaseapp.com",
@@ -121,6 +142,7 @@
                     valor_compra: valorCompra,
                     porcentagem_aplicada: porcentagem,
                     valor_cashback: cashbackGerado,
+                    tipo: "ganho", // Identifica que foi uma entrada
                     data: new Date()
                 });
 
@@ -131,6 +153,53 @@
             } catch (error) { 
                 console.error(error);
                 alert("Erro ao salvar no banco."); 
+            }
+        }
+
+        // NOVA FUNÇÃO: Resgata o cashback diminuindo o saldo e salvando histórico negativo
+        window.realizarResgate = async function() {
+            const cpf = document.getElementById('resgateCpf').value.trim();
+            const valorResgate = parseFloat(document.getElementById('resgateValor').value);
+
+            if (!cpf || cpf.length !== 11) return alert("Por favor, insira um CPF válido com 11 dígitos!");
+            if (isNaN(valorResgate) || valorResgate <= 0) return alert("Insira um valor de resgate válido!");
+
+            try {
+                const userRef = doc(db, "usuarios", cpf);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    return alert("Este cliente não possui cadastro ou saldo no sistema!");
+                }
+
+                const saldoAtual = userSnap.data().saldo_cashback || 0;
+
+                // Segurança: impede o comerciante de resgatar mais do que o cliente tem acumulado
+                if (valorResgate > saldoAtual) {
+                    return alert(`Saldo insuficiente!\nO cliente possui apenas R$ ${saldoAtual.toFixed(2).replace('.', ',')}`);
+                }
+
+                // 1. Deduz o valor do saldo do usuário (passando o valor negativo para o increment)
+                await setDoc(userRef, {
+                    saldo_cashback: increment(-valorResgate)
+                }, { merge: true });
+
+                // 2. Salva no histórico de extratos como um resgate/desconto
+                await addDoc(collection(db, "historico_compras"), {
+                    cpf_cliente: cpf,
+                    valor_compra: 0, 
+                    porcentagem_aplicada: 0,
+                    valor_cashback: -valorResgate, // Negativo para o extrato subtrair visualmente
+                    tipo: "resgate", // Identifica que foi uma retirada de dinheiro
+                    data: new Date()
+                });
+
+                alert(`Sucesso!\nDesconto de R$ ${valorResgate.toFixed(2).replace('.', ',')} aplicado.`);
+                document.getElementById('resgateCpf').value = '';
+                document.getElementById('resgateValor').value = '';
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao processar resgate.");
             }
         }
 
@@ -156,10 +225,7 @@
                 document.getElementById('ofertaTitulo').value = '';
                 document.getElementById('ofertaDesc').value = '';
                 document.getElementById('ofertaValidade').value = '';
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao salvar oferta.");
-            }
+            } catch (error) { alert("Erro ao salvar oferta."); }
         }
     </script>
 </body>
