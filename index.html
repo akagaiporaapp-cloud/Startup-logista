@@ -28,6 +28,10 @@
         .btn-orange:hover { background-color: #e68a00; }
         .btn-pink { background-color: #e91e63; }
         .btn-pink:hover { background-color: #c2185b; }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: -10px; margin-bottom: 15px; text-align: left; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-group label { display: inline; font-size: 14px; color: #ff9900; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -80,8 +84,13 @@
         <h2>Notificar Oferta Especial 🎯</h2>
         <p>Envie cupons ou descontos direto para o app do cliente</p>
 
+        <div class="checkbox-group">
+            <input type="checkbox" id="ofertaTodos" onchange="toggleCpfField(this)">
+            <label for="ofertaTodos">Enviar para TODOS os clientes cadastrados</label>
+        </div>
+
         <div class="input-group">
-            <label class="label-orange" for="ofertaCpf">CPF DO CLIENTE alvo</label>
+            <label class="label-orange" id="lblOfertaCpf" for="ofertaCpf">CPF DO CLIENTE alvo</label>
             <input type="number" id="ofertaCpf" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
         </div>
 
@@ -119,6 +128,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Bloqueia e limpa o campo CPF se a opção "Todos" for selecionada
+        window.toggleCpfField = function(checkbox) {
+            const cpfInput = document.getElementById('ofertaCpf');
+            const lblCpf = document.getElementById('lblOfertaCpf');
+            if (checkbox.checked) {
+                cpfInput.value = '';
+                cpfInput.disabled = true;
+                cpfInput.style.backgroundColor = '#e9edef';
+                lblCpf.style.color = '#667781';
+            } else {
+                cpfInput.disabled = false;
+                cpfInput.style.backgroundColor = '#f0f2f5';
+                lblCpf.style.color = '#ff9900';
+            }
+        }
+
         window.lancarCashback = async function() {
             const nome = document.getElementById('nomeInput').value.trim();
             const cpf = document.getElementById('cpfInput').value.trim();
@@ -142,7 +167,7 @@
                     valor_compra: valorCompra,
                     porcentagem_aplicada: porcentagem,
                     valor_cashback: cashbackGerado,
-                    tipo: "ganho", // Identifica que foi uma entrada
+                    tipo: "ganho",
                     data: new Date()
                 });
 
@@ -150,13 +175,9 @@
                 document.getElementById('valorInput').value = '';
                 document.getElementById('nomeInput').value = '';
                 document.getElementById('cpfInput').value = '';
-            } catch (error) { 
-                console.error(error);
-                alert("Erro ao salvar no banco."); 
-            }
+            } catch (error) { alert("Erro ao salvar no banco."); }
         }
 
-        // NOVA FUNÇÃO: Resgata o cashback diminuindo o saldo e salvando histórico negativo
         window.realizarResgate = async function() {
             const cpf = document.getElementById('resgateCpf').value.trim();
             const valorResgate = parseFloat(document.getElementById('resgateValor').value);
@@ -168,63 +189,62 @@
                 const userRef = doc(db, "usuarios", cpf);
                 const userSnap = await getDoc(userRef);
 
-                if (!userSnap.exists()) {
-                    return alert("Este cliente não possui cadastro ou saldo no sistema!");
-                }
+                if (!userSnap.exists()) return alert("Este cliente não possui cadastro!");
 
                 const saldoAtual = userSnap.data().saldo_cashback || 0;
 
-                // Segurança: impede o comerciante de resgatar mais do que o cliente tem acumulado
                 if (valorResgate > saldoAtual) {
                     return alert(`Saldo insuficiente!\nO cliente possui apenas R$ ${saldoAtual.toFixed(2).replace('.', ',')}`);
                 }
 
-                // 1. Deduz o valor do saldo do usuário (passando o valor negativo para o increment)
-                await setDoc(userRef, {
-                    saldo_cashback: increment(-valorResgate)
-                }, { merge: true });
+                await setDoc(userRef, { saldo_cashback: increment(-valorResgate) }, { merge: true });
 
-                // 2. Salva no histórico de extratos como um resgate/desconto
                 await addDoc(collection(db, "historico_compras"), {
                     cpf_cliente: cpf,
                     valor_compra: 0, 
                     porcentagem_aplicada: 0,
-                    valor_cashback: -valorResgate, // Negativo para o extrato subtrair visualmente
-                    tipo: "resgate", // Identifica que foi uma retirada de dinheiro
+                    valor_cashback: -valorResgate,
+                    tipo: "resgate",
                     data: new Date()
                 });
 
                 alert(`Sucesso!\nDesconto de R$ ${valorResgate.toFixed(2).replace('.', ',')} aplicado.`);
                 document.getElementById('resgateCpf').value = '';
                 document.getElementById('resgateValor').value = '';
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao processar resgate.");
-            }
+            } catch (error) { alert("Erro ao processar resgate."); }
         }
 
         window.enviarOferta = async function() {
-            const cpf = document.getElementById('ofertaCpf').value.trim();
+            const enviarParaTodos = document.getElementById('ofertaTodos').checked;
+            let cpf = "todos"; // Valor padrão caso envie para o lote completo
+
+            if (!enviarParaTodos) {
+                cpf = document.getElementById('ofertaCpf').value.trim();
+                if (!cpf || cpf.length !== 11) return alert("Por favor, informe o CPF de 11 dígitos do cliente!");
+            }
+
             const titulo = document.getElementById('ofertaTitulo').value.trim();
             const descricao = document.getElementById('ofertaDesc').value.trim();
             const validade = document.getElementById('ofertaValidade').value;
 
-            if (!cpf || cpf.length !== 11) return alert("Por favor, informe o CPF do cliente!");
             if (!titulo || !validade) return alert("Preencha o título e a data de validade!");
 
             try {
                 await addDoc(collection(db, "ofertas"), {
-                    cpf_cliente: cpf,
+                    cpf_cliente: cpf, // Salva "todos" ou o CPF real
                     titulo: titulo,
                     descricao: descricao,
                     validade: validade
                 });
 
-                alert("🎉 Oferta especial enviada com sucesso para o cliente!");
+                alert(enviarParaTodos ? "🎉 Oferta Geral enviada para TODOS os clientes!" : "🎉 Oferta Especial enviada para o cliente individual!");
+                
                 document.getElementById('ofertaCpf').value = '';
                 document.getElementById('ofertaTitulo').value = '';
                 document.getElementById('ofertaDesc').value = '';
                 document.getElementById('ofertaValidade').value = '';
+                document.getElementById('ofertaTodos').checked = false;
+                toggleCpfField(document.getElementById('ofertaTodos'));
             } catch (error) { alert("Erro ao salvar oferta."); }
         }
     </script>
