@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Painel Lojista — Cashback Empresa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; gap: 20px; }
+        .container { background: white; width: 100%; max-width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 10px solid #0052cc; text-align: center; }
+        .container.oferta-border { border-top-color: #ff9900; }
+        h2 { color: #111b21; margin-bottom: 5px; }
+        p { color: #667781; font-size: 14px; margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 18px; }
+        label { display: block; font-size: 13px; color: #111b21; font-weight: 600; margin-bottom: 6px; }
+        .label-blue { color: #0052cc; }
+        .label-orange { color: #ff9900; }
+        input, textarea { width: 100%; height: 45px; padding: 0 12px; border: 1px solid #e9edef; border-radius: 8px; outline: none; font-size: 15px; background-color: #f0f2f5; }
+        textarea { height: 70px; padding: 10px 12px; resize: none; }
+        input:focus, textarea:focus { border-color: #0052cc; background-color: #fff; }
+        .container.oferta-border input:focus, .container.oferta-border textarea:focus { border-color: #ff9900; background-color: #fff; }
+        button { width: 100%; height: 48px; background-color: #0052cc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #003d99; }
+        .btn-orange { background-color: #ff9900; }
+        .btn-orange:hover { background-color: #e68a00; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Cashback Empresa 🏪</h2>
+        <p>Lançamento de compras e créditos para clientes</p>
+
+        <div class="input-group">
+            <label class="label-blue" for="nomeInput">NOME DO CLIENTE (Primeiro cadastro)</label>
+            <input type="text" id="nomeInput" placeholder="Ex: Luiz Carlos">
+        </div>
+
+        <div class="input-group">
+            <label class="label-blue" for="cpfInput">CPF DO CLIENTE (Apenas números)</label>
+            <input type="number" id="cpfInput" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+        </div>
+
+        <div class="input-group">
+            <label class="label-blue" for="valorInput">VALOR DA COMPRA (R$)</label>
+            <input type="number" id="valorInput" step="0.01" placeholder="Ex: 150.00">
+        </div>
+
+        <div class="input-group">
+            <label class="label-blue" for="porcentagemInput">PORCENTAGEM DO CASHBACK (%)</label>
+            <input type="number" id="porcentagemInput" value="5">
+        </div>
+
+        <button onclick="lancarCashback()">Confirmar e Enviar Crédito</button>
+    </div>
+
+    <div class="container oferta-border">
+        <h2>Notificar Oferta Especial 🎯</h2>
+        <p>Envie cupons ou descontos direto para o app do cliente</p>
+
+        <div class="input-group">
+            <label class="label-orange" for="ofertaCpf">CPF DO CLIENTE alvo</label>
+            <input type="number" id="ofertaCpf" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+        </div>
+
+        <div class="input-group">
+            <label class="label-orange" for="ofertaTitulo">TÍTULO DA OFERTA</label>
+            <input type="text" id="ofertaTitulo" placeholder="Ex: 20% de Desconto na próxima compra!">
+        </div>
+
+        <div class="input-group">
+            <label class="label-orange" for="ofertaDesc">DETALHES / REGRAS DA OFERTA</label>
+            <textarea id="ofertaDesc" placeholder="Ex: Válido para compras acima de R$50 em todo o mês de Maio."></textarea>
+        </div>
+
+        <div class="input-group">
+            <label class="label-orange" for="ofertaValidade">PRAZO DE VALIDADE</label>
+            <input type="date" id="ofertaValidade">
+        </div>
+
+        <button class="btn-orange" onclick="enviarOferta()">Criar e Enviar Oferta</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, addDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // CREDENCIAIS DA SUA CONTA ATUALIZADAS
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFmMSu6usbjQua4KAP-V0FFTeq5WxYH5c",
+            authDomain: "startup-b5c8e.firebaseapp.com",
+            projectId: "startup-b5c8e",
+            storageBucket: "startup-b5c8e.firebasestorage.app",
+            messagingSenderId: "36503928162",
+            appId: "1:36503928162:web:22eafe938d86c6b2e99403b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.lancarCashback = async function() {
+            const nome = document.getElementById('nomeInput').value.trim();
+            const cpf = document.getElementById('cpfInput').value.trim();
+            const valorCompra = parseFloat(document.getElementById('valorInput').value);
+            const porcentagem = parseFloat(document.getElementById('porcentagemInput').value);
+
+            if (!cpf || cpf.length !== 11) return alert("Por favor, insira um CPF válido com 11 dígitos!");
+            if (isNaN(valorCompra) || valorCompra <= 0) return alert("Insira um valor de compra válido!");
+
+            const cashbackGerado = parseFloat(((valorCompra * porcentagem) / 100).toFixed(2));
+
+            try {
+                await setDoc(doc(db, "usuarios", cpf), {
+                    cpf: cpf,
+                    ...(nome && { nome: nome }), 
+                    saldo_cashback: increment(cashbackGerado)
+                }, { merge: true });
+
+                await addDoc(collection(db, "historico_compras"), {
+                    cpf_cliente: cpf,
+                    valor_compra: valorCompra,
+                    porcentagem_aplicada: porcentagem,
+                    valor_cashback: cashbackGerado,
+                    data: new Date()
+                });
+
+                alert("Sucesso!\nCashback de R$ " + cashbackGerado.toFixed(2) + " enviado para o cliente.");
+                document.getElementById('valorInput').value = '';
+                document.getElementById('nomeInput').value = '';
+                document.getElementById('cpfInput').value = '';
+            } catch (error) { 
+                console.error(error);
+                alert("Erro ao salvar no banco."); 
+            }
+        }
+
+        window.enviarOferta = async function() {
+            const cpf = document.getElementById('ofertaCpf').value.trim();
+            const titulo = document.getElementById('ofertaTitulo').value.trim();
+            const descricao = document.getElementById('ofertaDesc').value.trim();
+            const validade = document.getElementById('ofertaValidade').value;
+
+            if (!cpf || cpf.length !== 11) return alert("Por favor, informe o CPF do cliente!");
+            if (!titulo || !validade) return alert("Preencha o título e a data de validade!");
+
+            try {
+                await addDoc(collection(db, "ofertas"), {
+                    cpf_cliente: cpf,
+                    titulo: titulo,
+                    descricao: descricao,
+                    validade: validade
+                });
+
+                alert("🎉 Oferta especial enviada com sucesso para o cliente!");
+                document.getElementById('ofertaCpf').value = '';
+                document.getElementById('ofertaTitulo').value = '';
+                document.getElementById('ofertaDesc').value = '';
+                document.getElementById('ofertaValidade').value = '';
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao salvar oferta.");
+            }
+        }
+    </script>
+</body>
+</html>
