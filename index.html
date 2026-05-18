@@ -3,113 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Painel Lojista — Cashback Empresa</title>
+    <title>Lojista — Cashback Empresa</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; gap: 20px; }
-        .container { background: white; width: 100%; max-width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 10px solid #0052cc; text-align: center; }
-        .container.oferta-border { border-top-color: #ff9900; }
-        .container.resgate-border { border-top-color: #e91e63; }
-        h2 { color: #111b21; margin-bottom: 5px; }
-        p { color: #667781; font-size: 14px; margin-bottom: 25px; }
-        .input-group { text-align: left; margin-bottom: 18px; }
-        label { display: block; font-size: 13px; color: #111b21; font-weight: 600; margin-bottom: 6px; }
-        .label-blue { color: #0052cc; }
-        .label-orange { color: #ff9900; }
-        .label-pink { color: #e91e63; }
-        input, textarea { width: 100%; height: 45px; padding: 0 12px; border: 1px solid #e9edef; border-radius: 8px; outline: none; font-size: 15px; background-color: #f0f2f5; }
-        textarea { height: 70px; padding: 10px 12px; resize: none; }
-        input:focus, textarea:focus { border-color: #0052cc; background-color: #fff; }
-        .container.oferta-border input:focus, .container.oferta-border textarea:focus { border-color: #ff9900; background-color: #fff; }
-        .container.resgate-border input:focus { border-color: #e91e63; background-color: #fff; }
-        button { width: 100%; height: 48px; background-color: #0052cc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        button:hover { background-color: #003d99; }
-        .btn-orange { background-color: #ff9900; }
-        .btn-orange:hover { background-color: #e68a00; }
-        .btn-pink { background-color: #e91e63; }
-        .btn-pink:hover { background-color: #c2185b; }
-        
-        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: -10px; margin-bottom: 15px; text-align: left; }
-        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
-        .checkbox-group label { display: inline; font-size: 14px; color: #ff9900; cursor: pointer; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0052cc;
+            --primary-dark: #003d99;
+            --primary-light: #e6f0ff;
+            --secondary: #ff9900;
+            --secondary-dark: #e68a00;
+            --secondary-light: #fff3e0;
+            --accent: #e91e63;
+            --accent-dark: #c2185b;
+            --accent-light: #fce4ec;
+            --success: #00a884;
+            --gray-50: #f8f9fa;
+            --gray-100: #f1f3f5;
+            --gray-200: #e9ecef;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08);
+            --shadow-focus: 0 0 0 3px rgba(0,82,204,0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 32px 20px;
+            gap: 28px;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 520px;
+            padding: 32px;
+            border-radius: 28px;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--primary);
+        }
+
+        .container.oferta-border::before {
+            background: var(--secondary);
+        }
+
+        .container.resgate-border::before {
+            background: var(--accent);
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        h2 + p {
+            color: var(--gray-600);
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 16px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .label-blue { color: var(--primary); }
+        .label-orange { color: var(--secondary); }
+        .label-pink { color: var(--accent); }
+
+        input, textarea {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 14px;
+            outline: none;
+            font-size: 0.95rem;
+            background-color: white;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        textarea {
+            height: 80px;
+            padding: 12px 16px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-focus);
+        }
+
+        .container.oferta-border input:focus,
+        .container.oferta-border textarea:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255,153,0,0.15);
+        }
+
+        .container.resgate-border input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233,30,99,0.15);
+        }
+
+        button {
+            width: 100%;
+            height: 52px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-orange {
+            background-color: var(--secondary);
+        }
+        .btn-orange:hover:not(:disabled) {
+            background-color: var(--secondary-dark);
+        }
+        .btn-pink {
+            background-color: var(--accent);
+        }
+        .btn-pink:hover:not(:disabled) {
+            background-color: var(--accent-dark);
+        }
+
+        /* Spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: var(--secondary-light);
+            padding: 12px 16px;
+            border-radius: 14px;
+        }
+
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--secondary-dark);
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 16px;
+                gap: 20px;
+            }
+            .container {
+                padding: 24px;
+                border-radius: 24px;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- PRIMEIRO CARD: LANÇAR CASHBACK -->
     <div class="container">
-        <h2>Cashback Empresa 🏪</h2>
-        <p>Lançamento de compras e créditos para clientes</p>
+        <h2>🏪 Lançar Cashback</h2>
+        <p>Crédito para compras do cliente</p>
 
         <div class="input-group">
-            <label class="label-blue" for="nomeInput">NOME DO CLIENTE (Primeiro cadastro)</label>
+            <label class="label-blue">Nome do Cliente</label>
             <input type="text" id="nomeInput" placeholder="Ex: Luiz Carlos">
         </div>
 
         <div class="input-group">
-            <label class="label-blue" for="cpfInput">CPF DO CLIENTE (Apenas números)</label>
-            <input type="number" id="cpfInput" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+            <label class="label-blue">CPF (11 dígitos)</label>
+            <input type="number" id="cpfInput" placeholder="12345678901" maxlength="11" oninput="if(this.value.length>this.maxLength)this.value=this.value.slice(0,this.maxLength)">
         </div>
 
         <div class="input-group">
-            <label class="label-blue" for="valorInput">VALOR DA COMPRA (R$)</label>
-            <input type="number" id="valorInput" step="0.01" placeholder="Ex: 150.00">
+            <label class="label-blue">Valor da Compra (R$)</label>
+            <input type="number" id="valorInput" step="0.01" placeholder="150,00">
         </div>
 
         <div class="input-group">
-            <label class="label-blue" for="porcentagemInput">PORCENTAGEM DO CASHBACK (%)</label>
-            <input type="number" id="porcentagemInput" value="5">
+            <label class="label-blue">Cashback (%)</label>
+            <input type="number" id="porcentagemInput" value="5" step="0.5">
         </div>
 
-        <button onclick="lancarCashback()">Confirmar e Enviar Crédito</button>
+        <button id="btnLancarCashback">✅ Confirmar e Enviar Crédito</button>
     </div>
 
+    <!-- SEGUNDO CARD: RESGATE -->
     <div class="container resgate-border">
-        <h2>Resgatar Cashback 💰</h2>
-        <p>Descontar do saldo acumulado do cliente</p>
+        <h2>💰 Resgatar Cashback</h2>
+        <p>Descontar saldo do cliente</p>
 
         <div class="input-group">
-            <label class="label-pink" for="resgateCpf">CPF DO CLIENTE (Apenas números)</label>
-            <input type="number" id="resgateCpf" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+            <label class="label-pink">CPF do Cliente</label>
+            <input type="number" id="resgateCpf" placeholder="12345678901" maxlength="11" oninput="if(this.value.length>this.maxLength)this.value=this.value.slice(0,this.maxLength)">
         </div>
 
         <div class="input-group">
-            <label class="label-pink" for="resgateValor">VALOR DO RESGATE / DESCONTO (R$)</label>
-            <input type="number" id="resgateValor" step="0.01" placeholder="Ex: 25.00">
+            <label class="label-pink">Valor do Desconto (R$)</label>
+            <input type="number" id="resgateValor" step="0.01" placeholder="25,00">
         </div>
 
-        <button class="btn-pink" onclick="realizarResgate()">Confirmar Desconto / Resgate</button>
+        <button id="btnRealizarResgate" class="btn-pink">💸 Confirmar Desconto</button>
     </div>
 
+    <!-- TERCEIRO CARD: OFERTAS -->
     <div class="container oferta-border">
-        <h2>Notificar Oferta Especial 🎯</h2>
-        <p>Envie cupons ou descontos direto para o app do cliente</p>
+        <h2>🎯 Oferta Especial</h2>
+        <p>Envie cupons direto para o app</p>
 
         <div class="checkbox-group">
             <input type="checkbox" id="ofertaTodos" onchange="toggleCpfField(this)">
-            <label for="ofertaTodos">Enviar para TODOS os clientes cadastrados</label>
+            <label>📢 Enviar para TODOS os clientes</label>
         </div>
 
         <div class="input-group">
-            <label class="label-orange" id="lblOfertaCpf" for="ofertaCpf">CPF DO CLIENTE alvo</label>
-            <input type="number" id="ofertaCpf" placeholder="Ex: 12345678901" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="11">
+            <label class="label-orange" id="lblOfertaCpf">CPF do Cliente</label>
+            <input type="number" id="ofertaCpf" placeholder="12345678901" maxlength="11" oninput="if(this.value.length>this.maxLength)this.value=this.value.slice(0,this.maxLength)">
         </div>
 
         <div class="input-group">
-            <label class="label-orange" for="ofertaTitulo">TÍTULO DA OFERTA</label>
-            <input type="text" id="ofertaTitulo" placeholder="Ex: 20% de Desconto na próxima compra!">
+            <label class="label-orange">Título da Oferta</label>
+            <input type="text" id="ofertaTitulo" placeholder="Ex: 20% OFF na próxima compra!">
         </div>
 
         <div class="input-group">
-            <label class="label-orange" for="ofertaDesc">DETALHES / REGRAS DA OFERTA</label>
-            <textarea id="ofertaDesc" placeholder="Ex: Válido para compras acima de R$50 em todo o mês de Maio."></textarea>
+            <label class="label-orange">Descrição / Regras</label>
+            <textarea id="ofertaDesc" placeholder="Válido para compras acima de R$50 até o fim do mês."></textarea>
         </div>
 
         <div class="input-group">
-            <label class="label-orange" for="ofertaValidade">PRAZO DE VALIDADE</label>
+            <label class="label-orange">Data de Validade</label>
             <input type="date" id="ofertaValidade">
         </div>
 
-        <button class="btn-orange" onclick="enviarOferta()">Criar e Enviar Oferta</button>
+        <button id="btnEnviarOferta" class="btn-orange">📨 Criar e Enviar Oferta</button>
     </div>
 
     <script type="module">
@@ -128,30 +354,54 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Bloqueia e limpa o campo CPF se a opção "Todos" for selecionada
         window.toggleCpfField = function(checkbox) {
             const cpfInput = document.getElementById('ofertaCpf');
             const lblCpf = document.getElementById('lblOfertaCpf');
             if (checkbox.checked) {
                 cpfInput.value = '';
                 cpfInput.disabled = true;
-                cpfInput.style.backgroundColor = '#e9edef';
-                lblCpf.style.color = '#667781';
+                cpfInput.style.backgroundColor = '#f1f3f5';
+                lblCpf.style.opacity = '0.6';
             } else {
                 cpfInput.disabled = false;
-                cpfInput.style.backgroundColor = '#f0f2f5';
-                lblCpf.style.color = '#ff9900';
+                cpfInput.style.backgroundColor = 'white';
+                lblCpf.style.opacity = '1';
             }
         }
 
-        window.lancarCashback = async function() {
+        // FUNÇÃO PARA MOSTRAR LOADING EM UM BOTÃO
+        function setButtonLoading(button, isLoading, originalText = null) {
+            if (isLoading) {
+                button._originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner"></span> Processando...';
+            } else {
+                button.disabled = false;
+                button.innerHTML = button._originalText || originalText;
+            }
+        }
+
+        // 1. LANÇAR CASHBACK
+        const btnLancar = document.getElementById('btnLancarCashback');
+        btnLancar.addEventListener('click', async () => {
+            setButtonLoading(btnLancar, true);
+            
             const nome = document.getElementById('nomeInput').value.trim();
             const cpf = document.getElementById('cpfInput').value.trim();
             const valorCompra = parseFloat(document.getElementById('valorInput').value);
             const porcentagem = parseFloat(document.getElementById('porcentagemInput').value);
 
-            if (!cpf || cpf.length !== 11) return alert("Por favor, insira um CPF válido com 11 dígitos!");
-            if (isNaN(valorCompra) || valorCompra <= 0) return alert("Insira um valor de compra válido!");
+            if (!cpf || cpf.length !== 11) {
+                alert("⚠️ Insira um CPF válido com 11 dígitos!");
+                setButtonLoading(btnLancar, false);
+                return;
+            }
+            
+            if (isNaN(valorCompra) || valorCompra <= 0) {
+                alert("⚠️ Insira um valor de compra válido!");
+                setButtonLoading(btnLancar, false);
+                return;
+            }
 
             const cashbackGerado = parseFloat(((valorCompra * porcentagem) / 100).toFixed(2));
 
@@ -171,30 +421,54 @@
                     data: new Date()
                 });
 
-                alert("Sucesso!\nCashback de R$ " + cashbackGerado.toFixed(2) + " enviado para o cliente.");
+                alert(`✅ Sucesso!\nCashback de R$ ${cashbackGerado.toFixed(2).replace('.', ',')} enviado.`);
                 document.getElementById('valorInput').value = '';
                 document.getElementById('nomeInput').value = '';
                 document.getElementById('cpfInput').value = '';
-            } catch (error) { alert("Erro ao salvar no banco."); }
-        }
+            } catch (error) { 
+                console.error(error);
+                alert("❌ Erro ao salvar no banco."); 
+            } finally {
+                setButtonLoading(btnLancar, false);
+            }
+        });
 
-        window.realizarResgate = async function() {
+        // 2. REALIZAR RESGATE
+        const btnResgate = document.getElementById('btnRealizarResgate');
+        btnResgate.addEventListener('click', async () => {
+            setButtonLoading(btnResgate, true);
+            
             const cpf = document.getElementById('resgateCpf').value.trim();
             const valorResgate = parseFloat(document.getElementById('resgateValor').value);
 
-            if (!cpf || cpf.length !== 11) return alert("Por favor, insira um CPF válido com 11 dígitos!");
-            if (isNaN(valorResgate) || valorResgate <= 0) return alert("Insira um valor de resgate válido!");
+            if (!cpf || cpf.length !== 11) {
+                alert("⚠️ CPF inválido!");
+                setButtonLoading(btnResgate, false);
+                return;
+            }
+            
+            if (isNaN(valorResgate) || valorResgate <= 0) {
+                alert("⚠️ Valor inválido!");
+                setButtonLoading(btnResgate, false);
+                return;
+            }
 
             try {
                 const userRef = doc(db, "usuarios", cpf);
                 const userSnap = await getDoc(userRef);
 
-                if (!userSnap.exists()) return alert("Este cliente não possui cadastro!");
+                if (!userSnap.exists()) {
+                    alert("❌ Cliente não encontrado!");
+                    setButtonLoading(btnResgate, false);
+                    return;
+                }
 
                 const saldoAtual = userSnap.data().saldo_cashback || 0;
 
                 if (valorResgate > saldoAtual) {
-                    return alert(`Saldo insuficiente!\nO cliente possui apenas R$ ${saldoAtual.toFixed(2).replace('.', ',')}`);
+                    alert(`⚠️ Saldo insuficiente!\nCliente possui R$ ${saldoAtual.toFixed(2).replace('.', ',')}`);
+                    setButtonLoading(btnResgate, false);
+                    return;
                 }
 
                 await setDoc(userRef, { saldo_cashback: increment(-valorResgate) }, { merge: true });
@@ -208,36 +482,53 @@
                     data: new Date()
                 });
 
-                alert(`Sucesso!\nDesconto de R$ ${valorResgate.toFixed(2).replace('.', ',')} aplicado.`);
+                alert(`✅ Desconto de R$ ${valorResgate.toFixed(2).replace('.', ',')} aplicado.`);
                 document.getElementById('resgateCpf').value = '';
                 document.getElementById('resgateValor').value = '';
-            } catch (error) { alert("Erro ao processar resgate."); }
-        }
+            } catch (error) { 
+                console.error(error);
+                alert("❌ Erro ao processar resgate."); 
+            } finally {
+                setButtonLoading(btnResgate, false);
+            }
+        });
 
-        window.enviarOferta = async function() {
+        // 3. ENVIAR OFERTA
+        const btnOferta = document.getElementById('btnEnviarOferta');
+        btnOferta.addEventListener('click', async () => {
+            setButtonLoading(btnOferta, true);
+            
             const enviarParaTodos = document.getElementById('ofertaTodos').checked;
-            let cpf = "todos"; // Valor padrão caso envie para o lote completo
+            let cpf = "todos";
 
             if (!enviarParaTodos) {
                 cpf = document.getElementById('ofertaCpf').value.trim();
-                if (!cpf || cpf.length !== 11) return alert("Por favor, informe o CPF de 11 dígitos do cliente!");
+                if (!cpf || cpf.length !== 11) {
+                    alert("⚠️ Informe o CPF de 11 dígitos!");
+                    setButtonLoading(btnOferta, false);
+                    return;
+                }
             }
 
             const titulo = document.getElementById('ofertaTitulo').value.trim();
             const descricao = document.getElementById('ofertaDesc').value.trim();
             const validade = document.getElementById('ofertaValidade').value;
 
-            if (!titulo || !validade) return alert("Preencha o título e a data de validade!");
+            if (!titulo || !validade) {
+                alert("⚠️ Preencha título e data de validade!");
+                setButtonLoading(btnOferta, false);
+                return;
+            }
 
             try {
                 await addDoc(collection(db, "ofertas"), {
-                    cpf_cliente: cpf, // Salva "todos" ou o CPF real
+                    cpf_cliente: cpf,
                     titulo: titulo,
                     descricao: descricao,
                     validade: validade
                 });
 
-                alert(enviarParaTodos ? "🎉 Oferta Geral enviada para TODOS os clientes!" : "🎉 Oferta Especial enviada para o cliente individual!");
+                alert(enviarParaTodos ? "📢 Oferta enviada para TODOS os clientes!" : "🎯 Oferta enviada para o cliente!");
                 
                 document.getElementById('ofertaCpf').value = '';
                 document.getElementById('ofertaTitulo').value = '';
@@ -245,8 +536,13 @@
                 document.getElementById('ofertaValidade').value = '';
                 document.getElementById('ofertaTodos').checked = false;
                 toggleCpfField(document.getElementById('ofertaTodos'));
-            } catch (error) { alert("Erro ao salvar oferta."); }
-        }
+            } catch (error) { 
+                console.error(error);
+                alert("❌ Erro ao salvar oferta."); 
+            } finally {
+                setButtonLoading(btnOferta, false);
+            }
+        });
     </script>
 </body>
 </html>
